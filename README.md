@@ -1,9 +1,17 @@
 # SRHCS
 
-## This is an example.
+Here's the code to transform survey data from 3 countries into an insightful report. The three stages of this project consist of
 
-Here is some text.
+## 1. Cleaning, Transforming, Merging, and Appending
 
-`Hello world.`
+	`clean.do`
 
-`This is my branch.`
+## 2. Generating Variables
+
+	`prep.do`
+
+## 3. Analysis
+
+	`analyze.do`
+
+
