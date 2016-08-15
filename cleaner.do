@@ -282,7 +282,7 @@ order section_answered, before(secA_answered)
 saveold "all_$country", replace
 
 keep Serial - ROSTERIDE8 
-saveold "roster", replace
+saveold "roster_$country", replace
 
 use "all_$country", clear
 bys Serial (MEMBID): gen hh_level = _n
@@ -309,7 +309,7 @@ gen RR_answered = R2_answered
 drop BEGHL-VARENDR1
 rename *Y *
 
-saveold "RR2", replace
+saveold "RR2_$country", replace
 
 use "all_$country", clear
 keep if RESPONDENTID1 == MEMBID
