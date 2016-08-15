@@ -7,9 +7,9 @@ set more off
 global path = "/Users/Stinson/Desktop/github/SRHCS/"
 cd "$path"
 
-global country 	= "J"
-if "$country" == "I" global filename "Kurdistan Main Survey Final.xlsx"
-if "$country" == "J" global filename "Jordan Main Survey Final.xlsx"
+global country 	= "Kurdistan"
+if "$country" == "Kurdistan" global filename "Kurdistan Main Survey Final.xlsx"
+if "$country" == "Jordan" global filename "Jordan Main Survey Final.xlsx"
 
 global keep_vars Serial MEMID RR CAMP_YN
 
@@ -18,7 +18,6 @@ do programs
 clear
 set obs 1
 gen issue = ""
-saveold "v2$filename", replace
 
 *********************
 *****  Import *******
@@ -27,7 +26,7 @@ saveold "v2$filename", replace
 import excel using "$path/rawdata/$filename", clear first
 
 
-if "$country" == "I" {
+if "$country" == "Kurdistan" {
 
 rename COMMENTS QUEST_NUM
 
@@ -93,7 +92,7 @@ replace	GOVERNORATE = "Duhok" if inlist(Serial, 1888)
 
 
 
-if "$country" == "J" {
+if "$country" == "Jordan" {
 
 gen QUEST_NUM = Serial
 
@@ -211,7 +210,7 @@ bys Serial: egen hh_children_u18 = total(A14 < 18 & A12 <= 3)
 gen after_sept_2010 = (A28A > 2010 | (A28B >= 9 & A28B <= 12))
 
 
-if "$country" == "I" {
+if "$country" == "Kurdistan" {
 replace GOVERNO = upper(GOVERNO)
 replace GOVERNO = "11" if strpos(GOVERNORATE,"D") == 1 | strpos(GOVERNORATE,"OK") > 0
 replace GOVERNO = "13" if strpos(GOVERNORATE,"SU") > 0 | strpos(GOVERNORATE,"LA") > 0
@@ -219,7 +218,7 @@ replace GOVERNO = "15" if strpos(GOVERNORATE,"ER") > 0 | strpos(GOVERNORATE,"IL"
 }
 
 
-if "$country" == "J" {
+if "$country" == "Jordan" {
 g 		GOVERNOR = "2" if strpos(GOVERNORATE,"Am") == 1 | strpos(GOVERNORATE,"an") > 0
 replace	GOVERNOR = "1" if GOVERNORATE == "mafraq" | strpos(GOVERNORATE,"alm") == 1 | strpos(GOVERNORATE,"maf") > 0 | strpos(GOVERNORATE,"Maf") > 0 | strpos(GOVERNORATE,"MAF") > 0 | strpos(GOVERNORATE,"Alm") == 1 | strpos(GOVERNORATE,"za'") > 0 | strpos(GOVERNORATE,"zat") > 0 | strpos(GOVERNORATE,"zaat") > 0 | strpos(GOVERNORATE,"ZAT") > 0 | strpos(GOVERNORATE,"zar") > 0 | strpos(GOVERNORATE,"zta") > 0 | strpos(GOVERNORATE,"z't") > 0 | strpos(GOVERNORATE,"z'a") > 0 | strpos(GOVERNORATE,"mof") > 0 | strpos(GOVERNORATE,"mfr") > 0 | GOVERNORATE == "maraq" | GOVERNORATE == "madraq"  
 replace	GOVERNOR = "4" if GOVERNORATE == "azraq" | strpos(GOVERNORATE,"rqa") > 0 | strpos(GOVERNORATE,"RQA") > 0 | strpos(GOVERNORATE,"AZR") > 0 | strpos(GOVERNORATE,"azr") > 0 | GOVERNORATE == "ZQARA" | GOVERNORATE == "alzraq" | GOVERNORATE == "ZARQZ" 
@@ -227,7 +226,7 @@ replace	GOVERNOR = "4" if GOVERNORATE == "azraq" | strpos(GOVERNORATE,"rqa") > 0
 
 gen DISTRICT_standard = .
 
-if "$country" == "I" {
+if "$country" == "Kurdistan" {
 replace DISTRICT_standard = DISTRICT if GOVERNOR == "11"
 replace DISTRICT_standard = DISTRICT + 7 if GOVERNOR == "13"
 replace DISTRICT_standard = DISTRICT + 23 if GOVERNOR == "15" & DISTRICT <= 6 
@@ -235,14 +234,14 @@ replace DISTRICT_standard = DISTRICT + 22 if GOVERNOR == "15" & DISTRICT >= 8
 tostring DISTRICT_standard, replace
 }
 
-if "$country" == "I" {
+if "$country" == "Kurdistan" {
 gen CAMPCODE_str = CAMPCODE
 tostring CAMPCODE_str, replace
 gen CAMPCODE_standard = GOVERNOR + "0" + CAMPCODE_str if CAMPCODE < 10
 replace CAMPCODE_standard = GOVERNOR + CAMPCODE_str if CAMPCODE >= 10 & CAMP == 1
 }
 
-if "$country" == "J" destring CAMPCODE, replace
+if "$country" == "Jordan" destring CAMPCODE, replace
 
 *gen CURRENT_LOCATION = CAMPCODE_standard if CAMP == 1
 *replace CURRENT_LOCATION = DISTRICT_standard if CURRENT_LOC == ""
@@ -265,10 +264,10 @@ ds BEGHLY - T3Y
 local vars `r(varlist)'
 egen R2_answered = rownonmiss(`vars'), strok
 
-if "$country" == "J" drop if HHRESULT >= 3 & PROXYRESPONDENT == . //In Jordan, they didn't contact proxy respondents.
+if "$country" == "Jordan" drop if HHRESULT >= 3 & PROXYRESPONDENT == . //In Jordan, they didn't contact proxy respondents.
 
-if "$country" == "J" do labels
-if "$country" == "I" do labels2 
+if "$country" == "Jordan" do labels_j
+if "$country" == "Kurdistan" do labels_k 
 
 //order A47XX  , after(A47X1)
 //order A47XXX2, after(A47X2)
@@ -280,30 +279,30 @@ order Checkvars, before(MEMID)
 
 order section_answered, before(secA_answered)
 
-saveold "all", replace
+saveold "all_$country", replace
 
 keep Serial - ROSTERIDE8 
 saveold "roster", replace
 
-use "all", clear
+use "all_$country", clear
 bys Serial (MEMBID): gen hh_level = _n
 keep if hh_level == 1
 drop hh_level
 
-saveold "hh_level", replace
+saveold "hh_level_$country", replace
 
-use "all", clear
+use "all_$country", clear
 bys Serial: gen hh_level = _n
 keep if A32 == MEMBID | (A32 == 88 & hh_level == 1)
 drop hh_level
 
-saveold "main_respondent", replace
+saveold "main_respondent_$country", replace
 
-use "all", clear
+use "all_$country", clear
 keep if K1 == MEMBID
-saveold "selected_child", replace
+saveold "selected_child_$country", replace
 
-use "all", clear
+use "all_$country", clear
 keep if RESPONDENTID2 == MEMBID
 replace RR = 2
 gen RR_answered = R2_answered
@@ -312,7 +311,7 @@ rename *Y *
 
 saveold "RR2", replace
 
-use "all", clear
+use "all_$country", clear
 keep if RESPONDENTID1 == MEMBID
 gen RR_answered = R1_answered
 replace RR = 1
@@ -329,7 +328,7 @@ label var monthofarrival_SecL "Month of arrival to country from Section L"
 label var districtarrived_SecL "First district of residence in country"
 label var movedtoSyria "Moved back to Syria"
 
-if "$country" == "I" {
+if "$country" == "Kurdistan" {
 forval i = 1/7 {
 local j = 8 - `i'
 	local k = `j' - 1
@@ -340,7 +339,7 @@ local j = 8 - `i'
 }
 }
 
-if "$country" == "J" {
+if "$country" == "Jordan" {
 forval i = 1/7 {
 local j = 8 - `i'
 	local k = `j' - 1
@@ -352,8 +351,8 @@ local j = 8 - `i'
 }
 
 egen 	moves_within_country_secL = anycount(L13AX?), v(1)
-if "$country" == "I" egen CAMP_moves_within_country_secL = anycount(L13BX?), v(1100/1509)
-if "$country" == "J" egen CAMP_moves_within_country_secL = anycount(L13CX?), v(2502/2521)
+if "$country" == "Kurdistan" egen CAMP_moves_within_country_secL = anycount(L13BX?), v(1100/1509)
+if "$country" == "Jordan" egen CAMP_moves_within_country_secL = anycount(L13CX?), v(2502/2521)
 replace moves_within_country_secL = moves_within_country_secL + CAMP_moves_within_country_secL - 1
 replace moves_within_country_secL = 0 if moves_within_country_secL < 0
 
@@ -369,4 +368,4 @@ order L9X, after(L9A)
 order P17X, after(P17A)
 order ENDHT ENDMT VARENDT, after(VARENDR1)
 
-saveold "random_respondents", replace
+saveold "random_respondents_$country", replace
