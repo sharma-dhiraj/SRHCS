@@ -13,7 +13,13 @@ if "$country" == "Jordan" global filename "Jordan Main Survey Final.xlsx"
 
 global keep_vars Serial MEMID RR CAMP_YN
 
-do programs
+if "$country" == "Kurdistan" {
+do programs_k
+}
+
+if "$country" == "Jordan" {
+do programs_j
+}
 
 clear
 set obs 1
