@@ -4,9 +4,6 @@ timer on 1
 pause on
 set more off
 
-global path = "/Users/Stinson/Desktop/github/SRHCS/"
-cd "$path"
-
 global country 	= "Kurdistan"
 if "$country" == "Kurdistan" global filename "Kurdistan Main Survey Final.xlsx"
 if "$country" == "Jordan" global filename "Jordan Main Survey Final.xlsx"
@@ -29,7 +26,7 @@ gen issue = ""
 *****  Import *******
 *********************
 
-import excel using "$path/rawdata/$filename", clear first
+import excel using "rawdata/$filename", clear first
 
 
 if "$country" == "Kurdistan" {
@@ -322,7 +319,7 @@ keep if RESPONDENTID1 == MEMBID
 gen RR_answered = R1_answered
 replace RR = 1
 drop *Y
-append using "RR2"
+append using "RR2_$country"
 
 gen yearofarrival_SecL = .
 gen monthofarrival_SecL = .
